@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FPS Key Mapper</title>
+  <style>
+    :root {
+      --bg: #070d18;
+      --panel: #101b2b;
+      --card: #18273a;
+      --card-2: #1e3049;
+      --text: #edf4ff;
+      --muted: #9fb3d1;
+      --primary: #5eead4;
+      --secondary: #60a5fa;
+      --danger: #f87171;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --shadow: rgba(0, 0, 0, 0.38);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #182843, #070d18 55%);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+
+    .app {
+      width: min(1100px, 96vw);
+      background: rgba(16, 27, 43, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 22px;
+      box-shadow: 0 28px 70px var(--shadow);
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2vw, 2.5rem);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: #07131d;
+    }
+
+    .secondary {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(96, 165, 250, 0.22);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(24,39,58,0.96), rgba(16,27,43,0.96));
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .binding-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bind-row {
+      display: grid;
+      grid-template-columns: 1fr 124px;
+      gap: 12px;
+      align-items: center;
+      background: rgba(30,48,73,0.75);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .bind-row label {
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .bind-btn {
+      background: rgba(94,234,212,0.08);
+      border: 1px solid rgba(94,234,212,0.32);
+      color: var(--text);
+      min-height: 46px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.98rem;
+    }
+
+    .bind-btn.active {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.6);
+      box-shadow: 0 0 20px rgba(74, 222, 128, 0.18);
+    }
+
+    .keyboard-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+      background: rgba(7,13,24,0.8);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .key {
+      min-width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #1d2d4a, #151f31);
+      border: 1px solid rgba(148,163,184,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text);
+      box-shadow: inset 0 -3px 0 rgba(255,255,255,0.05);
+      transition: 0.1s ease;
+      user-select: none;
+    }
+
+    .key.small {
+      min-width: 44px;
+      font-size: 0.72rem;
+    }
+
+    .key.wide {
+      min-width: 94px;
+    }
+
+    .key.space {
+      min-width: 220px;
+    }
+
+    .key.pressed {
+      background: linear-gradient(180deg, var(--success), #16a34a);
+      border-color: rgba(134,239,172,0.7);
+      transform: translateY(2px) scale(0.98);
+      box-shadow: 0 0 20px rgba(74,222,128,0.25);
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: rgba(96, 165, 250, 0.08);
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 7px 12px;
+      background: rgba(94, 234, 212, 0.09);
+      border: 1px solid rgba(94,234,212,0.28);
+      color: var(--primary);
+      border-radius: 999px;
+      font-weight: 700;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    .log {
+      margin-top: 18px;
+      background: rgba(7,13,24,0.8);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .log h3 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: "Consolas", monospace;
+      font-size: 0.88rem;
+    }
+
+    .log-item {
+      background: rgba(24,39,58,0.85);
+      border: 1px solid rgba(148,163,184,0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .bind-row {
+        grid-template-columns: 1fr;
+      }
+
+      .key {
+        min-width: 42px;
+        height: 44px;
+      }
+
+      .key.wide {
+        min-width: 82px;
+      }
+
+      .key.space {
+        min-width: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <h1>FPS Key Mapper</h1>
+      <div class="buttons">
+        <button class="primary" id="resetBtn">Reset mặc định</button>
+        <button class="secondary" id="saveBtn">Lưu thiết lập</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <div class="binding-list" id="bindingList"></div>
+      </div>
+
+      <div class="card keyboard-panel">
+        <div class="keyboard" id="keyboard"></div>
+        <div class="status">
+          <span id="statusText">Sẵn sàng</span>
+          <span class="badge" id="activeAction">--</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log">
+      <h3>Event log</h3>
+      <div class="log-list" id="eventLog"></div>
+    </div>
+  </div>
+
+  <script>
+    const defaultMapping = {
+      forward: "W",
+      backward: "S",
+      left: "A",
+      right: "D",
+      jump: "Space",
+      crouch: "Ctrl",
+      sprint: "Shift",
+      fire: "Mouse Left",
+      reload: "R",
+      use: "E",
+      weapon1: "1",
+      weapon2: "2",
+      weapon3: "3",
+      pause: "Esc"
+    };
+
+    let mapping = { ...defaultMapping };
+    let bindingAction = null;
+
+    const labels = {
+      forward: "Tiến",
+      backward: "Lùi",
+      left: "Trái",
+      right: "Phải",
+      jump: "Nhảy",
+      crouch: "Cúi",
+      sprint: "Sprint",
+      fire: "Bắn",
+      reload: "Reload",
+      use: "Dùng / Interact",
+      weapon1: "Vũ khí 1",
+      weapon2: "Vũ khí 2",
+      weapon3: "Vũ khí 3",
+      pause: "Pause"
+    };
+
+    const bindingList = document.getElementById("bindingList");
+    const keyboard = document.getElementById("keyboard");
+    const statusText = document.getElementById("statusText");
+    const activeAction = document.getElementById("activeAction");
+    const eventLog = document.getElementById("eventLog");
+
+    function normalizeKeyName(event) {
+      if (event.code === "Space") return "Space";
+      if (event.key === " ") return "Space";
+      if (event.key === "Escape") return "Esc";
+      if (event.key === "ArrowUp") return "ArrowUp";
+      if (event.key === "ArrowDown") return "ArrowDown";
+      if (event.key === "ArrowLeft") return "ArrowLeft";
+      if (event.key === "ArrowRight") return "ArrowRight";
+      if (event.key === "Control") return "Ctrl";
+      if (event.key === "Shift") return "Shift";
+      if (event.key === "Alt") return "Alt";
+      if (event.key === "Enter") return "Enter";
+      if (event.key === "Tab") return "Tab";
+      if (event.key === "Backspace") return "Backspace";
+      if (event.key.length === 1) return event.key.toUpperCase();
+      return event.key;
+    }
+
+    function normalizeMouseButton(button) {
+      if (button === 0) return "Mouse Left";
+      if (button === 1) return "Mouse Middle";
+      if (button === 2) return "Mouse Right";
+      return "Mouse";
+    }
+
+    function renderKeyLayout() {
+      const rows = [
+        ["Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"],
+        ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace"],
+        ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+        ["Caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
+        ["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
+        ["Ctrl", "Win", "Alt", "Space", "Alt", "Fn", "Ctrl"]
+      ];
+
+      keyboard.innerHTML = "";
+      rows.forEach(row => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "row";
+
+        row.forEach(key => {
+          const el = document.createElement("div");
+          el.className = "key";
+          el.dataset.key = key;
+
+          if (["Backspace", "Tab", "Caps", "Enter", "Shift"].includes(key)) {
+            el.classList.add("wide");
+          }
+          if (key === "Space") {
+            el.classList.add("space");
+          }
+          if (["Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Win", "Alt", "Ctrl", "Fn"].includes(key)) {
+            el.classList.add("small");
+          }
+
+          el.textContent = key;
+          rowEl.appendChild(el);
+        });
+
+        keyboard.appendChild(rowEl);
+      });
+    }
+
+    function renderBindingList() {
+      bindingList.innerHTML = "";
+      Object.entries(mapping).forEach(([action, keyName]) => {
+        const row = document.createElement("div");
+        row.className = "bind-row";
+
+        const label = document.createElement("label");
+        label.textContent = labels[action];
+
+        const btn = document.createElement("button");
+        btn.className = "bind-btn";
+        btn.textContent = keyName;
+        btn.dataset.action = action;
+
+        if (bindingAction === action) {
+          btn.classList.add("active");
+        }
+
+        btn.addEventListener("click", () => {
+          bindingAction = bindingAction === action ? null : action;
+          statusText.textContent = bindingAction ? `Đang gán: ${labels[bindingAction]}` : "Sẵn sàng";
+          activeAction.textContent = bindingAction ? labels[bindingAction] : "--";
+          renderBindingList();
+        });
+
+        row.appendChild(label);
+        row.appendChild(btn);
+        bindingList.appendChild(row);
+      });
+    }
+
+    function addLog(message) {
+      const item = document.createElement("div");
+      item.className = "log-item";
+      item.textContent = message;
+
+      eventLog.prepend(item);
+
+      while (eventLog.children.length > 6) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    function highlightKey(keyName) {
+      const keys = [...document.querySelectorAll(".key")];
+      keys.forEach(k => k.classList.remove("pressed"));
+
+      const target = keys.find(k => k.dataset.key === keyName);
+      if (target) {
+        target.classList.add("pressed");
+        setTimeout(() => target.classList.remove("pressed"), 140);
+      }
+    }
+
+    function assignKey(action, keyName) {
+      mapping[action] = keyName;
+      renderBindingList();
+      addLog(`${labels[action]} -> ${keyName}`);
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const keyName = normalizeKeyName(event);
+
+      if (bindingAction) {
+        event.preventDefault();
+        assignKey(bindingAction, keyName);
+        bindingAction = null;
+        statusText.textContent = "Sẵn sàng";
+        activeAction.textContent = "--";
+        renderBindingList();
+        return;
+      }
+
+      const matchedAction = Object.keys(mapping).find(action => mapping[action] === keyName);
+      if (matchedAction) {
+        event.preventDefault();
+        statusText.textContent = `Đang nhấn: ${labels[matchedAction]}`;
+        activeAction.textContent = labels[matchedAction];
+        highlightKey(keyName);
+        addLog(`${labels[matchedAction]} được kích hoạt`);
+      } else {
+        statusText.textContent = `Phím: ${keyName}`;
+        activeAction.textContent = "--";
+        highlightKey(keyName);
+      }
+    });
+
+    document.addEventListener("mousedown", (event) => {
+      const buttonName = normalizeMouseButton(event.button);
+
+      if (bindingAction) {
+        event.preventDefault();
+        assignKey(bindingAction, buttonName);
+        bindingAction = null;
+        statusText.textContent = "Sẵn sàng";
+        activeAction.textContent = "--";
+        renderBindingList();
+        return;
+      }
+
+      const matchedAction = Object.keys(mapping).find(action => mapping[action] === buttonName);
+      if (matchedAction) {
+        statusText.textContent = `Đang nhấn: ${labels[matchedAction]}`;
+        activeAction.textContent = labels[matchedAction];
+        addLog(`${labels[matchedAction]} được kích hoạt bằng ${buttonName}`);
+      }
+    });
+
+    document.addEventListener("keyup", () => {
+      statusText.textContent = "Sẵn sàng";
+      activeAction.textContent = "--";
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      mapping = { ...defaultMapping };
+      bindingAction = null;
+      renderBindingList();
+      statusText.textContent = "Đã reset về mặc định";
+      activeAction.textContent = "--";
+      addLog("Reset map phím FPS về mặc định");
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      localStorage.setItem("fpsKeyMap", JSON.stringify(mapping));
+      addLog("Đã lưu thiết lập FPS");
+      statusText.textContent = "Đã lưu profile";
+    });
+
+    const saved = localStorage.getItem("fpsKeyMap");
+    if (saved) {
+      try {
+        const loaded = JSON.parse(saved);
+        mapping = { ...defaultMapping, ...loaded };
+        addLog("Đã tải profile FPS đã lưu");
+      } catch (e) {
+        addLog("Không load được profile cũ");
+      }
+    }
+
+    renderKeyLayout();
+    renderBindingList();
+  </script>
+</body>
+</html>
